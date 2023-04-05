@@ -25,6 +25,7 @@ runs:
   steps:
     - name: Check for composer
       id: cache-composer-setup
+      shell: bash
       run: |
         if which composer >/dev/null 2>&1 ; then
           echo "Composer is available"
