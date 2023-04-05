@@ -29,13 +29,14 @@ runs:
       run: |
         if which composer >/dev/null 2>&1 ; then
           echo "Composer is available"
-          echo "::set-output name=composer-available::true" # Set an output variable
+
+          echo "composer-available=true" >> $GITHUB_OUTPUT
           echo "composer-cache-dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-          echo "::set-output name=composer-cache-dir::"
           echo "cache-hit=true" >> $GITHUB_OUTPUT
         else
           echo "Composer is not available"
-          echo "::set-output name=composer-available::false" # Set an output variable
+
+          echo "composer-available=false" >> $GITHUB_OUTPUT
           echo "cache-hit=false" >> $GITHUB_OUTPUT
         fi
 
@@ -43,6 +44,6 @@ runs:
       uses: actions/cache@v3
       if: steps.cache-composer-setup.outputs.composer-available == 'true' # Only run if composer is available
       with:
-        path: ${{ steps.composer-cache-setup.outputs.composer-cache-dir }}
+        path: ${{ steps.cache-composer-setup.outputs.composer-cache-dir }}
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.spoons.lock') }}
         restore-keys: ${{ runner.os }}-composer-
