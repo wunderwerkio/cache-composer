@@ -1,0 +1,47 @@
+name: "Cache Composer"
+author: "wunderwerk software GmbH"
+description: "Cache composer dependencies"
+
+branding:
+  color: "blue"
+  icon: "archive"
+
+inputs:
+  key:
+    description: "The cache key to use"
+    default: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+    required: false
+  restore-keys:
+    description: "Restore cache with matching key"
+    default: ${{ runner.os }}-composer-
+    required: false
+
+outputs:
+  cache-hit:
+    description: "A boolean value to indicate an exact match was found for the primary key"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check for composer
+      id: cache-composer-setup
+      run: |
+        if which composer >/dev/null 2>&1 ; then
+          echo "Composer is available"
+          echo "::set-output name=composer-available::true" # Set an output variable
+          echo "composer-cache-dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+          echo "::set-output name=composer-cache-dir::"
+          echo "cache-hit=true" >> $GITHUB_OUTPUT
+        else
+          echo "Composer is not available"
+          echo "::set-output name=composer-available::false" # Set an output variable
+          echo "cache-hit=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      if: steps.cache-composer-setup.outputs.composer-available == 'true' # Only run if composer is available
+      with:
+        path: ${{ steps.composer-cache-setup.outputs.composer-cache-dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.spoons.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
